@@ -1,0 +1,46 @@
+<.header>
+  Listing Widgets
+  <:actions>
+    <.link patch={~p"/widgets/new"}>
+      <.button>New Widget</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="widgets"
+  rows={@streams.widgets}
+  row_click={fn {_id, widget} -> JS.navigate(~p"/widgets/#{widget}") end}
+>
+  <:col :let={{_id, widget}} label="Name"><%= widget.name %></:col>
+  <:action :let={{_id, widget}}>
+    <div class="sr-only">
+      <.link navigate={~p"/widgets/#{widget}"}>Show</.link>
+    </div>
+    <.link patch={~p"/widgets/#{widget}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, widget}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: widget.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="widget-modal"
+  show
+  on_cancel={JS.patch(~p"/widgets")}
+>
+  <.live_component
+    module={CrashWeb.WidgetLive.FormComponent}
+    id={@widget.id || :new}
+    title={@page_title}
+    action={@live_action}
+    widget={@widget}
+    patch={~p"/widgets"}
+  />
+</.modal>
